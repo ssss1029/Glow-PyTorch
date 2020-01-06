@@ -6,6 +6,7 @@ import random
 from itertools import islice
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data as data
@@ -100,6 +101,7 @@ def main(
     output_dir,
     saved_optimizer,
     warmup,
+    distributed,
 ):
 
     device = "cpu" if (not torch.cuda.is_available() or not cuda) else "cuda:0"
@@ -141,7 +143,11 @@ def main(
         y_condition,
     )
 
+    if distributed:
+        model = nn.DataParallel(model)
+
     model = model.to(device)
+
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=5e-5)
 
     lr_lambda = lambda epoch: min(1.0, (epoch + 1) / warmup)  # noqa
@@ -446,6 +452,12 @@ if __name__ == "__main__":
         "--saved_optimizer",
         default="",
         help="Path to optimizer to load for continuing training",
+    )
+
+    parser.add_argument(
+        "--distributed",
+        action="save_true",
+        help="Use --distributed if you want your model to train on multiple GPUs"
     )
 
     parser.add_argument("--seed", type=int, default=0, help="manual seed")
