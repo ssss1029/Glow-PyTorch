@@ -60,6 +60,37 @@ def get_CIFAR10(augment, dataroot, download):
 
     return image_shape, num_classes, train_dataset, test_dataset
 
+def get_CIFAR100(augment, dataroot, download):
+    image_shape = (32, 32, 3)
+    num_classes = 100
+
+    test_transform = transforms.Compose([transforms.ToTensor(), preprocess])
+
+    if augment:
+        transformations = [transforms.RandomAffine(0, translate=(0.1, 0.1)),
+                           transforms.RandomHorizontalFlip()]
+    else:
+        transformations = []
+
+    transformations.extend([transforms.ToTensor(), preprocess])
+
+    train_transform = transforms.Compose(transformations)
+
+    one_hot_encode = lambda target: F.one_hot(torch.tensor(target), num_classes)
+
+    path = Path(dataroot) / 'data' / 'CIFAR100'
+    train_dataset = datasets.CIFAR100(path, train=True,
+                                     transform=train_transform,
+                                     target_transform=one_hot_encode,
+                                     download=download)
+
+    test_dataset = datasets.CIFAR100(path, train=False,
+                                    transform=test_transform,
+                                    target_transform=one_hot_encode,
+                                    download=download)
+
+    return image_shape, num_classes, train_dataset, test_dataset
+
 
 def get_SVHN(augment, dataroot, download):
     image_shape = (32, 32, 3)

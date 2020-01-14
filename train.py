@@ -456,7 +456,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--distributed",
-        action="save_true",
+        action="store_true",
         help="Use --distributed if you want your model to train on multiple GPUs"
     )
 
